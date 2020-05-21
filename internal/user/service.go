@@ -40,5 +40,15 @@ func (s *userService) CreateUser(ctx context.Context, userDetails User) error {
 }
 
 func (s *userService) AuthenticateUser(ctx context.Context, userDetails User) error {
+	var rec *User
+	var err error
+	if err, rec = s.repo.FindUser(ctx, userDetails); err != nil {
+		logrus.WithError(err).Error("Unable to fetch the record")
+		return errors.New("Cant be logined")
+	}
+	if err := bcrypt.CompareHashAndPassword([]byte(rec.Password), []byte(userDetails.Password)); err != nil {
+		logrus.WithError(err).Error("Canot Access")
+		return errors.New("unable to access the Apllication")
+	}
 	return nil
 }

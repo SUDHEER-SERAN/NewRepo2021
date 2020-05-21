@@ -59,11 +59,14 @@ func (h *loginHandler) Login(w http.ResponseWriter, r *http.Request) {
 	if entity.Username == "" || entity.Password == "" {
 		logrus.Warn("Missing Passowrd or Username")
 		common.MakeError(w, http.StatusUnauthorized, "login", "missing auth Details", "login")
+		return
 	}
 
 	if err := h.service.AuthenticateUser(ctx, entity); err != nil {
 		logrus.Warn("Unatorized Access")
 		common.MakeError(w, http.StatusUnauthorized, "login", "missing auth Details", "login")
+		return
 	}
+	common.EncodeResponse(w, "{}")
 
 }

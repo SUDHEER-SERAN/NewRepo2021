@@ -26,6 +26,13 @@ func (d *Database) CreateUserRepo(ctx context.Context, u User) error {
 	return nil
 }
 
-func (d *Database) FindUser(user User) error {
-	return nil
+func (d *Database) FindUser(tx context.Context, userDetails User) (error, *User) {
+	var user = &User{}
+	err := d.database.Conn.
+		QueryRow(context.Background(), "select password,role from users where username=$1", userDetails.Username).Scan(&user.Password, &user.Role)
+	if err != nil {
+		logrus.WithError(err).Warn("unable to Select doc")
+		return errors.New("unable to insert doc metadata"), nil
+	}
+	return nil, user
 }
