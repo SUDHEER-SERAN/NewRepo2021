@@ -37,6 +37,7 @@ func NewApp() *fx.App {
 func NewMux(lc fx.Lifecycle) *mux.Router {
 	logrus.Info("creating mux")
 	router := mux.NewRouter()
+	router.PathPrefix("/").Handler(http.StripPrefix("/", http.FileServer(http.Dir("../static/jobreport"))))
 	headersOk := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"})
 	originsOk := handlers.AllowedOrigins([]string{"*"})
 	methodsOk := handlers.AllowedMethods([]string{"GET", "HEAD", "POST", "PUT", "PATCH", "OPTIONS", "DELETE"})
