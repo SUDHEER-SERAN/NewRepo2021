@@ -19,16 +19,19 @@ func main() {
 
 	app.Run()
 }
-func NewApp() *fx.App{
+func NewApp() *fx.App {
 
 	return fx.New(
 		fx.Provide(
 			common.LoadPostgresDatabaseConfig,
 			database.NewPostgresDatabase,
-			NewMux,
 			user.NewUserService,
+			user.NewUserDatabase,
+			NewMux,
 		),
-		fx.Invoke(user.MakeLoginHandler),
+		fx.Invoke(
+			user.MakeLoginHandler,
+		),
 	)
 }
 func NewMux(lc fx.Lifecycle) *mux.Router {

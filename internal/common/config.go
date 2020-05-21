@@ -15,7 +15,7 @@ func LoadPostgresDatabaseConfig() PostgresDatabaseConfig {
 	hostport := getEnv("hostport ", 5432)
 	username := getEnv("host", "postgres")
 	password := getEnv("password", "kerala@21")
-	databasename := getEnv("databasename", "postgres")
+	databasename := getEnv("databasename", "jobreport")
 	pgConString := fmt.Sprintf("port=%d host=%s user=%s password=%s dbname=%s sslmode=disable", hostport, hostname, username, password, databasename)
 
 	return PostgresDatabaseConfig{

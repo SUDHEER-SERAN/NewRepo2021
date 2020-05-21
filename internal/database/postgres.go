@@ -10,7 +10,7 @@ import (
 )
 
 type PostgresDatabase struct {
-	conn *pgx.Conn
+	Conn *pgx.Conn
 }
 
 func NewPostgresDatabase(lc fx.Lifecycle, config common.PostgresDatabaseConfig) *PostgresDatabase {
@@ -22,13 +22,14 @@ func NewPostgresDatabase(lc fx.Lifecycle, config common.PostgresDatabaseConfig) 
 	logrus.Info("Connected to Postgres")
 
 	psqldb := &PostgresDatabase{
-		conn: conn,
+		Conn: conn,
 	}
-
+	lc.Append(fx.Hook{
+		OnStop: func(ctx context.Context) error {
+			logrus.Info("CLosing the DB Connection")
+			return conn.Close(context.Background())
+		},
+	})
 	return psqldb
 
-}
-
-func (p *PostgresDatabase) CreateUserDB() string {
-	return "Haisss"
 }
