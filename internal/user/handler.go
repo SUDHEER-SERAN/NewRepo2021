@@ -61,12 +61,16 @@ func (h *loginHandler) Login(w http.ResponseWriter, r *http.Request) {
 		common.MakeError(w, http.StatusUnauthorized, "login", "missing auth Details", "login")
 		return
 	}
-
-	if err := h.service.AuthenticateUser(ctx, entity); err != nil {
+	token, err := h.service.AuthenticateUser(ctx, entity)
+	if err != nil {
 		logrus.Warn("Unatorized Access")
 		common.MakeError(w, http.StatusUnauthorized, "login", "missing auth Details", "login")
 		return
 	}
-	common.EncodeResponse(w, "{}")
+
+	cookie := http.Cookie{Name: "token", Value: token}
+
+	http.SetCookie(w, &cookie)
+	common.EncodeResponse(w, "{status:'loggedin'}")
 
 }

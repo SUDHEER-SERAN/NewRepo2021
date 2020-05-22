@@ -20,7 +20,7 @@ func MakeError(w http.ResponseWriter, code int, domain string, message string, m
 
 func EncodeResponse(w http.ResponseWriter, response interface{}) {
 	enc := json.NewEncoder(w)
-	enc.SetEscapeHTML(false)
+	//enc.SetEscapeHTML(false)
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(http.StatusOK)
 	enc.Encode(response)
