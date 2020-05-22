@@ -2,12 +2,15 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"jobreport/internal/common"
 	"jobreport/internal/database"
 	"jobreport/internal/user"
 	"net/http"
 	"os"
+	"strings"
 
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
@@ -44,8 +47,8 @@ func NewMux(lc fx.Lifecycle) *mux.Router {
 	methodsOk := handlers.AllowedMethods([]string{"GET", "HEAD", "POST", "PUT", "PATCH", "OPTIONS", "DELETE"})
 	cors := handlers.CORS(originsOk, headersOk, methodsOk)
 
-	router.Use(cors)
-	handler := (cors)((router))
+	router.Use(cors, authenticate)
+	handler := (cors)((authenticate)(router))
 
 	lc.Append(fx.Hook{
 		OnStart: func(context.Context) error {
@@ -64,4 +67,36 @@ func NewMux(lc fx.Lifecycle) *mux.Router {
 		},
 	})
 	return router
+}
+
+func authenticate(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.Contains(r.URL.Path, "login") && r.Method == "POST" {
+			next.ServeHTTP(w, r) // call original
+			return
+		}
+		cookie := r.Cookies()
+		tokenString := cookie[0].Value
+		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+			// Don't forget to validate the alg is what you expect:
+			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+				return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+			}
+
+			// hmacSampleSecret is a []byte containing your secret, e.g. []byte("my_secret_key")
+			return []byte("secretKey"), nil
+		})
+
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusUnauthorized)
+			return
+		}
+
+		if _, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+			next.ServeHTTP(w, r) // call original
+		} else {
+			http.Error(w, "Invalid Token", http.StatusUnauthorized)
+			return
+		}
+	})
 }
