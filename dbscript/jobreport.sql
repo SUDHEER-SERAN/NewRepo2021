@@ -1,27 +1,27 @@
 CREATE TABLE "tusers" (
   "empid" int,
   "userid" SERIAL PRIMARY KEY,
-  "password" varcharacter
+  "password" varchar
 );
 
 CREATE TABLE "temployeedetails" (
   "empid" SERIAL PRIMARY KEY,
-  "firstname" varchar,
+  "firstname" varchar NOT NULL,
   "lastname" varchar,
-  "mobileno" int,
+  "mobileno" int NOT NULL,
   "address" varchar,
   "role" int
 );
 
 CREATE TABLE "tcustomer" (
   "custid" SERIAL PRIMARY KEY,
-  "firstname" varchar,
+  "firstname" varchar NOT NULL,
   "lastname" varchar,
-  "mobileno" int,
+  "mobileno" int NOT NULL,
   "address" varchar,
   "location" varchar,
   "route" varchar,
-  "type" int
+  "custtype" int
 );
 
 CREATE TABLE "trequest" (
@@ -44,21 +44,22 @@ CREATE TABLE "trequest" (
   "deliveredby" int,
   "verify" char,
   "verifiedby" int,
-  "technicianid" varchar2,
-  "workdetails" varchar2,
-  "workstartdate" datetime,
-  "workenddate" datetime,
-  "cancellationdate" datetime,
-  "cancellationreason" varchar2,
+  "technicianid" varchar,
+  "workdetails" varchar,
+  "workstartdate" date,
+  "workenddate" date,
+  "cancellationdate" date,
+  "cancellationreason" varchar,
   "customerapproval" char,
-  "overtimereason" varchar2,
-  "oldreqid" int[]
+  "overtimereason" varchar,
+  "oldreqid" int,
+  "careof" int
 );
 
 CREATE TABLE "tpayment" (
   "payid" SERIAL PRIMARY KEY,
   "requestid" int,
-  "modeofpayment" id,
+  "modeofpayment" int,
   "estimationamount" int,
   "agreedamount" int,
   "actualamount" int,
@@ -79,26 +80,6 @@ CREATE TABLE "tcharges" (
   "totalamount" int
 );
 
-CREATE TABLE "tservicingitem" (
-  "serviceid" SERIAL PRIMARY KEY,
-  "itemname" varchar
-);
-
-CREATE TABLE "tcustomertype" (
-  "id" SERIAL PRIMARY KEY,
-  "type" varchar
-);
-
-CREATE TABLE "tworkstatus" (
-  "id" SERIAL PRIMARY KEY,
-  "status" varchar
-);
-
-CREATE TABLE "tpaymentmode" (
-  "id" SERIAL PRIMARY KEY,
-  "payment" varchar
-);
-
 CREATE TABLE "tbrokerdetails" (
   "brokerid" SERIAL PRIMARY KEY,
   "fristname" varchar,
@@ -106,22 +87,43 @@ CREATE TABLE "tbrokerdetails" (
   "mobileno" int
 );
 
+CREATE TABLE "treference" (
+  "refid" SERIAL PRIMARY KEY,
+  "reftype" varchar,
+  "refdescription" varchar
+);
+
+CREATE TABLE "treferencecode" (
+  "refcodeid" SERIAL PRIMARY KEY,
+  "refid" int,
+  "refcode" varchar,
+  "refcodedescription" varchar
+);
+
 ALTER TABLE "tusers" ADD FOREIGN KEY ("empid") REFERENCES "temployeedetails" ("empid");
 
-ALTER TABLE "tcustomer" ADD FOREIGN KEY ("type") REFERENCES "tcustomertype" ("type");
+ALTER TABLE "temployeedetails" ADD FOREIGN KEY ("role") REFERENCES "treferencecode" ("refcodeid");
+
+ALTER TABLE "tcustomer" ADD FOREIGN KEY ("custtype") REFERENCES "treferencecode" ("refcodeid");
 
 ALTER TABLE "trequest" ADD FOREIGN KEY ("custid") REFERENCES "tcustomer" ("custid");
 
-ALTER TABLE "trequest" ADD FOREIGN KEY ("typeofservice") REFERENCES "tservicingitem" ("serviceid");
+ALTER TABLE "trequest" ADD FOREIGN KEY ("typeofservice") REFERENCES "treferencecode" ("refcodeid");
 
-ALTER TABLE "trequest" ADD FOREIGN KEY ("workstatus") REFERENCES "tworkstatus" ("id");
+ALTER TABLE "trequest" ADD FOREIGN KEY ("workstatus") REFERENCES "treferencecode" ("refcodeid");
 
 ALTER TABLE "trequest" ADD FOREIGN KEY ("brokerid") REFERENCES "tbrokerdetails" ("brokerid");
 
 ALTER TABLE "trequest" ADD FOREIGN KEY ("deliveredby") REFERENCES "temployeedetails" ("empid");
 
+ALTER TABLE "trequest" ADD FOREIGN KEY ("oldreqid") REFERENCES "trequest" ("requestid");
+
+ALTER TABLE "trequest" ADD FOREIGN KEY ("careof") REFERENCES "treferencecode" ("refcodeid");
+
 ALTER TABLE "tpayment" ADD FOREIGN KEY ("requestid") REFERENCES "trequest" ("requestid");
 
-ALTER TABLE "tpayment" ADD FOREIGN KEY ("modeofpayment") REFERENCES "tpaymentmode" ("id");
+ALTER TABLE "tpayment" ADD FOREIGN KEY ("modeofpayment") REFERENCES "treferencecode" ("refcodeid");
 
 ALTER TABLE "tcharges" ADD FOREIGN KEY ("requestid") REFERENCES "trequest" ("requestid");
+
+ALTER TABLE "treferencecode" ADD FOREIGN KEY ("refid") REFERENCES "treference" ("refid");
