@@ -9,5 +9,5 @@ require (
 	github.com/jackc/pgx/v4 v4.6.0
 	github.com/sirupsen/logrus v1.6.0
 	go.uber.org/fx v1.12.0
-	golang.org/x/crypto v0.0.0-20200323165209-0ec3e9974c59
+	golang.org/x/crypto v0.0.0-20200510223506-06a226fb4e37
 )
