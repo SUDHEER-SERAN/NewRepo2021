@@ -5,10 +5,18 @@ import (
 )
 
 type User struct {
+	EmpId    int    `json:"empId"`
 	Username string `json:"username"`
 	Password string `json:"password"`
-	Address  string `json:"address"`
-	Role     string `json:"role"`
+}
+
+type EmployeeDetails struct {
+	EmpId     int    `json:"empId"`
+	FirstName string `json:"firstName"`
+	LastName  string `json:"lastName"`
+	MobileNo  int    `json:"mobileNo"`
+	Address   string `json:"address"`
+	Role      int    `json:"role"`
 }
 
 type Token struct {

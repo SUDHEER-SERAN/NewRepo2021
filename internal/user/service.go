@@ -15,7 +15,7 @@ const (
 )
 
 type Service interface {
-	CreateUser(ctx context.Context, userDetails User) error
+	CreateUser(ctx context.Context, userDetails User, employeeDetails EmployeeDetails) error
 	AuthenticateUser(ctx context.Context, userDetails User) (string, error)
 }
 
@@ -30,7 +30,7 @@ func NewUserService(r *Database) Service {
 	return s
 }
 
-func (s *userService) CreateUser(ctx context.Context, userDetails User) error {
+func (s *userService) CreateUser(ctx context.Context, userDetails User, employeeDetails EmployeeDetails) error {
 	ePwd, err := bcrypt.GenerateFromPassword([]byte(userDetails.Password), bcrypt.DefaultCost)
 
 	if err != nil {
@@ -38,7 +38,7 @@ func (s *userService) CreateUser(ctx context.Context, userDetails User) error {
 		return errors.New("unable to encrypt password")
 	}
 	userDetails.Password = string(ePwd)
-	if err := s.repo.CreateUserRepo(ctx, userDetails); err != nil {
+	if err := s.repo.CreateUserRepo(ctx, userDetails, employeeDetails); err != nil {
 		logrus.WithError(err).Error("unable to create user")
 		return errors.New("unable to create user")
 	}
@@ -56,9 +56,14 @@ func (s *userService) AuthenticateUser(ctx context.Context, userDetails User) (s
 		logrus.WithError(err).Error("Canot Access")
 		return "", errors.New("unable to access the Apllication")
 	}
+	err, role := s.repo.FindUserRole(ctx, rec.EmpId)
+	if err != nil {
+		logrus.WithError(err).Error("Unable to fetch the record")
+		return "", errors.New("Cant be logined")
+	}
 	tockenExpiration := time.Now().Add(time.Hour * 72)
 
-	tokenString, err := s.getToken(userDetails, tockenExpiration)
+	tokenString, err := s.getToken(rec.EmpId, role, tockenExpiration)
 	if err != nil {
 		logrus.WithError(err).Error("Canot generate the Jwt token")
 		return "", errors.New("unable to generate the JWT Token")
@@ -66,7 +71,7 @@ func (s *userService) AuthenticateUser(ctx context.Context, userDetails User) (s
 	return tokenString, nil
 }
 
-func (s *userService) getToken(user User, expiration time.Time) (string, error) {
+func (s *userService) getToken(empId int, role int, expiration time.Time) (string, error) {
 	// CreateEntry the token
 	token := jwt.New(jwt.SigningMethodHS256)
 
@@ -74,8 +79,9 @@ func (s *userService) getToken(user User, expiration time.Time) (string, error) 
 	claims := token.Claims.(jwt.MapClaims)
 
 	// Set token claims
-	claims["username"] = user.Username
-	claims["role"] = user.Role
+	claims["empId"] = empId
+	claims["role"] = role
+
 	claims["exp"] = expiration.Unix()
 
 	// Sign the token with our secret

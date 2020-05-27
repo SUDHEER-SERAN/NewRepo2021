@@ -1,7 +1,9 @@
 package user
 
 import (
+	"bytes"
 	"encoding/json"
+	"io/ioutil"
 	"jobreport/internal/common"
 	"net/http"
 
@@ -25,19 +27,30 @@ func MakeLoginHandler(mr *mux.Router, s Service) http.Handler {
 
 func (h *loginHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	entity := User{}
+	userEntity := User{}
+	employeeDetailsEntity := EmployeeDetails{}
 
-	if err := json.NewDecoder(r.Body).Decode(&entity); err != nil {
+	buf, _ := ioutil.ReadAll(r.Body)
+	rdr1 := ioutil.NopCloser(bytes.NewBuffer(buf))
+	rdr2 := ioutil.NopCloser(bytes.NewBuffer(buf))
+
+	if err := json.NewDecoder(rdr1).Decode(&employeeDetailsEntity); err != nil {
+		logrus.WithError(err).Error("unable to unmarshal employeeDetails entry")
+		common.MakeError(w, http.StatusBadRequest, "CreateUser", "Bad Request", "create")
+		return
+	}
+
+	if err := json.NewDecoder(rdr2).Decode(&userEntity); err != nil {
 		logrus.WithError(err).Error("unable to unmarshal User entry")
 		common.MakeError(w, http.StatusBadRequest, "CreateUser", "Bad Request", "create")
 		return
 	}
 
-	if entity.Username == "" || entity.Password == "" {
+	if userEntity.Username == "" || userEntity.Password == "" {
 		logrus.Warn("Missing Passowrd or Username")
 		common.MakeError(w, http.StatusUnauthorized, "CreateUser", "missing auth Details", "login")
 	}
-	if err := h.service.CreateUser(ctx, entity); err != nil {
+	if err := h.service.CreateUser(ctx, userEntity, employeeDetailsEntity); err != nil {
 		common.MakeError(w, http.StatusUnauthorized, "", "Canot create the user", "login")
 		return
 	}

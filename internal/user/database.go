@@ -17,22 +17,40 @@ func NewUserDatabase(database *database.PostgresDatabase) *Database {
 		database: database,
 	}
 }
-func (d *Database) CreateUserRepo(ctx context.Context, u User) error {
-	if _, err := d.database.Conn.
-		Exec(ctx, "insert into users(username,password,address,role) values($1,$2,$3,$4)", u.Username, u.Password, u.Address, u.Role); err != nil {
+func (d *Database) CreateUserRepo(ctx context.Context, u User, e EmployeeDetails) error {
+
+	if err := d.database.Conn.
+		QueryRow(ctx, "insert into temployeedetails(firstname,lastname,mobileno,address,role) values($1,$2,$3,$4,$5) returning empid", e.FirstName, e.LastName, e.MobileNo, e.Address, e.Role).Scan(e.EmpId); err != nil {
 		logrus.WithError(err).Warn("unable to insert doc")
 		return errors.New("unable to insert doc metadata")
 	}
+
+	if _, err := d.database.Conn.
+		Exec(ctx, "insert into tusers(empid,password,username) values($1,$2,$3)", e.EmpId, u.Password, u.Username); err != nil {
+		logrus.WithError(err).Warn("unable to insert doc")
+		return errors.New("unable to insert doc metadata")
+	}
+
 	return nil
 }
 
 func (d *Database) FindUser(tx context.Context, userDetails User) (error, *User) {
 	var user = &User{}
 	err := d.database.Conn.
-		QueryRow(context.Background(), "select password,role from users where username=$1", userDetails.Username).Scan(&user.Password, &user.Role)
+		QueryRow(context.Background(), "select password,empid from tusers where username=$1", userDetails.Username).Scan(&user.Password, &user.EmpId)
 	if err != nil {
 		logrus.WithError(err).Warn("unable to Select doc")
 		return errors.New("unable to insert doc metadata"), nil
 	}
 	return nil, user
+}
+func (d *Database) FindUserRole(tx context.Context, empid int) (error, int) {
+	var role int
+	err := d.database.Conn.
+		QueryRow(context.Background(), "select role from tusers where username=$1", empid).Scan(&role)
+	if err != nil {
+		logrus.WithError(err).Warn("unable to Select doc")
+		return errors.New("unable to insert doc metadata"), 0
+	}
+	return nil, role
 }

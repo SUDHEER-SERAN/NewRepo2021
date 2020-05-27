@@ -2,6 +2,7 @@ CREATE TABLE "tusers" (
   "empid" int,
   "userid" SERIAL PRIMARY KEY,
   "password" varchar
+  "username" varchar
 );
 
 CREATE TABLE "temployeedetails" (
