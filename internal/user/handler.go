@@ -30,17 +30,17 @@ func (h *loginHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	userEntity := User{}
 	employeeDetailsEntity := EmployeeDetails{}
 
-	buf, _ := ioutil.ReadAll(r.Body)
-	rdr1 := ioutil.NopCloser(bytes.NewBuffer(buf))
-	rdr2 := ioutil.NopCloser(bytes.NewBuffer(buf))
+	bodyBuf, _ := ioutil.ReadAll(r.Body)
+	bodyRdr1 := ioutil.NopCloser(bytes.NewBuffer(bodyBuf))
+	bodyRdr2 := ioutil.NopCloser(bytes.NewBuffer(bodyBuf))
 
-	if err := json.NewDecoder(rdr1).Decode(&employeeDetailsEntity); err != nil {
+	if err := json.NewDecoder(bodyRdr1).Decode(&employeeDetailsEntity); err != nil {
 		logrus.WithError(err).Error("unable to unmarshal employeeDetails entry")
 		common.MakeError(w, http.StatusBadRequest, "CreateUser", "Bad Request", "create")
 		return
 	}
 
-	if err := json.NewDecoder(rdr2).Decode(&userEntity); err != nil {
+	if err := json.NewDecoder(bodyRdr2).Decode(&userEntity); err != nil {
 		logrus.WithError(err).Error("unable to unmarshal User entry")
 		common.MakeError(w, http.StatusBadRequest, "CreateUser", "Bad Request", "create")
 		return
