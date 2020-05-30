@@ -7,6 +7,7 @@ import (
 
 type Service interface {
 	initializePage(ctx context.Context) (ReportCombainedReference, error)
+	generateReport(ctx context.Context, reportEntity Report)
 }
 type reportService struct {
 	database *Database
@@ -27,7 +28,7 @@ func (s *reportService) initializePage(ctx context.Context) (ReportCombainedRefe
 		return combainedRef, errors.New("unable to Fetech doc metadata in treferencecode")
 	}
 
-	co, err := s.database.initializeReport(ctx, 3)
+	co, err := s.database.initializeReport(ctx, 6)
 	if err != nil {
 		return combainedRef, errors.New("unable to Fetech doc metadata in treferencecode")
 	}
@@ -38,5 +39,8 @@ func (s *reportService) initializePage(ctx context.Context) (ReportCombainedRefe
 	}
 
 	return reportCombained, nil
+
+}
+func (s *reportService) generateReport(ctx context.Context, reportEntity Report) {
 
 }
