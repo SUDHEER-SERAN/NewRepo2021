@@ -19,7 +19,7 @@ func NewReportDatabase(database *database.PostgresDatabase) *Database {
 	}
 }
 
-func (d *Database) getReferenceListBycode(ctx context.Context, id int) ([]reportmodel.LookupRef, error) {
+func (d *Database) getReferenceListById(ctx context.Context, id int) ([]reportmodel.LookupRef, error) {
 	var listOfRef []reportmodel.LookupRef
 	rows, err := d.database.Conn.Query(ctx, "select refcodeid,refcode from treferencecode where refid=$1", id)
 	if err != nil {
@@ -62,7 +62,7 @@ func (d *Database) generateReport(ctx context.Context, reportEntity JobReportBas
 			return errors.New("unable to Fetech doc metadata in treferencecode")
 		}
 	}
-	if _, err := tx.Exec(ctx, `insert into trequest(custid,typeofservice,requestdate,careof) values($1,$2,$3,$4)`, cusId, reportEntity.TypeOfService.RefCodeId, reportEntity.RequestDate, reportEntity.CareOf.RefCodeId); err != nil {
+	if _, err := tx.Exec(ctx, `insert into trequest(custid,typeofservice,requestdate,careof,otheritem) values($1,$2,$3,$4,$5)`, cusId, reportEntity.TypeOfService.RefCodeId, reportEntity.RequestDate, reportEntity.CareOf.RefCodeId, reportEntity.OtherItem); err != nil {
 		logrus.WithError(err).Warn("unable to Insert the record in tcustomer generateReport")
 		return errors.New("unable to Fetech doc metadata in treferencecode")
 	}
@@ -70,4 +70,27 @@ func (d *Database) generateReport(ctx context.Context, reportEntity JobReportBas
 
 	return nil
 
+}
+func (d *Database) getReferenceList(ctx context.Context, id int, searchKey string) ([]reportmodel.LookupRef, error) {
+	var listOfRef []reportmodel.LookupRef
+	rows, err := d.database.Conn.Query(ctx, "select refcodeid,refcode from treferencecode where refid=$1 and lower(refcode) like  $2 || '%'", id, searchKey)
+	if err != nil {
+		logrus.WithError(err).Warn("unable to select  doc in treferencecode")
+		return listOfRef, errors.New("unable to select  doc in in treferencecode")
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+		typeRef := reportmodel.LookupRef{}
+		err := rows.Scan(&typeRef.RefCodeId, &typeRef.RefCode)
+
+		if err != nil {
+			logrus.WithError(err).Warn("unable to select  doc in treferencecode")
+			return listOfRef, errors.New("unable to select  doc in treferencecode")
+		}
+		listOfRef = append(listOfRef, typeRef)
+	}
+
+	return listOfRef, nil
 }

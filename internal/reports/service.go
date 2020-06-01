@@ -3,11 +3,14 @@ package reports
 import (
 	"context"
 	"errors"
+	"jobreport/internal/reportmodel"
 )
 
 type Service interface {
 	initializePage(ctx context.Context) (ReportCombainedReference, error)
 	generateReport(ctx context.Context, reportEntity JobReportBasicDetails) error
+	getReports(ctx context.Context) error
+	getjrList(ctx context.Context, id int, searchKey string) ([]reportmodel.LookupRef, error)
 }
 type reportService struct {
 	database *Database
@@ -23,12 +26,12 @@ func NewReportService(d *Database) Service {
 
 func (s *reportService) initializePage(ctx context.Context) (ReportCombainedReference, error) {
 	var combainedRef ReportCombainedReference
-	serviceTypes, err := s.database.getReferenceListBycode(ctx, 2)
+	serviceTypes, err := s.database.getReferenceListById(ctx, 2)
 	if err != nil {
 		return combainedRef, errors.New("unable to Fetech doc metadata in treferencecode")
 	}
 
-	co, err := s.database.getReferenceListBycode(ctx, 6)
+	co, err := s.database.getReferenceListById(ctx, 6)
 	if err != nil {
 		return combainedRef, errors.New("unable to Fetech doc metadata in treferencecode")
 	}
@@ -47,4 +50,23 @@ func (s *reportService) generateReport(ctx context.Context, reportEntity JobRepo
 		return errors.New("unable to Create the report")
 	}
 	return nil
+}
+
+func (s *reportService) getReports(ctx context.Context) error {
+
+	return nil
+}
+
+func (s *reportService) getjrList(ctx context.Context, id int, searchKey string) ([]reportmodel.LookupRef, error) {
+
+	list, err := s.database.getReferenceList(ctx, id, searchKey)
+	if err != nil {
+		return nil, errors.New("unable to Fetch the list")
+	}
+	if list == nil {
+		var refList = []reportmodel.LookupRef{}
+		return refList, nil
+	}
+	return list, nil
+
 }
