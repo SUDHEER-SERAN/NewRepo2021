@@ -20,6 +20,10 @@ func NewUserDatabase(database *database.PostgresDatabase) *Database {
 func (d *Database) CreateUserRepo(ctx context.Context, u User, e EmployeeDetails) error {
 
 	var empId int
+	tx, _ := d.database.Conn.Begin(ctx)
+
+	defer tx.Rollback(ctx)
+
 	if err := d.database.Conn.
 		QueryRow(ctx, "insert into temployeedetails(firstname,lastname,mobileno,address,role) values($1,$2,$3,$4,$5) returning empid", e.FirstName, e.LastName, e.MobileNo, e.Address, e.Role).Scan(&empId); err != nil {
 		logrus.WithError(err).Warn("unable to insert doc in temployeedetails")
@@ -31,6 +35,7 @@ func (d *Database) CreateUserRepo(ctx context.Context, u User, e EmployeeDetails
 		logrus.WithError(err).Warn("unable to insert doc in tusers")
 		return errors.New("unable to insert doc metadata in tusers")
 	}
+	tx.Commit(ctx)
 
 	return nil
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"jobreport/internal/database"
+	"jobreport/internal/reportmodel"
 
 	"github.com/sirupsen/logrus"
 )
@@ -18,8 +19,8 @@ func NewReportDatabase(database *database.PostgresDatabase) *Database {
 	}
 }
 
-func (d *Database) initializeReport(ctx context.Context, id int) ([]ReportListReference, error) {
-	var listOfRef []ReportListReference
+func (d *Database) getReferenceListBycode(ctx context.Context, id int) ([]reportmodel.LookupRef, error) {
+	var listOfRef []reportmodel.LookupRef
 	rows, err := d.database.Conn.Query(ctx, "select refcodeid,refcode from treferencecode where refid=$1", id)
 	if err != nil {
 		logrus.WithError(err).Warn("unable to select  doc in treferencecode")
@@ -29,8 +30,8 @@ func (d *Database) initializeReport(ctx context.Context, id int) ([]ReportListRe
 	defer rows.Close()
 
 	for rows.Next() {
-		typeRef := ReportListReference{}
-		err := rows.Scan(&typeRef.Id, &typeRef.Value)
+		typeRef := reportmodel.LookupRef{}
+		err := rows.Scan(&typeRef.RefCodeId, &typeRef.RefCode)
 
 		if err != nil {
 			logrus.WithError(err).Warn("unable to select  doc in treferencecode")
@@ -40,4 +41,33 @@ func (d *Database) initializeReport(ctx context.Context, id int) ([]ReportListRe
 	}
 
 	return listOfRef, nil
+}
+
+func (d *Database) generateReport(ctx context.Context, reportEntity JobReportBasicDetails) error {
+	conn := d.database.Conn
+
+	tx, err := conn.Begin(ctx)
+	defer tx.Rollback(ctx)
+	if err != nil {
+		logrus.WithError(err).Warn("unable to Begin the Transaction in generateReport")
+		return errors.New("unable to Fetech doc metadata in treferencecode")
+	}
+	var cusId int
+	if err := tx.QueryRow(ctx, `select custid from tcustomer where mobileno=$1`, reportEntity.MobileNo).Scan(&cusId); err != nil {
+		logrus.WithError(err).Warn("unable to Select the record in tcustomer generateReport")
+	}
+	if cusId == 0 {
+		if err := tx.QueryRow(ctx, `insert into tcustomer(firstname,lastname,mobileno,address,location,route,custtype) values($1,$2,$3,$4,$5,$6,$7) returning custid`, reportEntity.FirstName, reportEntity.LastName, reportEntity.MobileNo, reportEntity.Address, reportEntity.Location, reportEntity.Route, reportEntity.CusType).Scan(&cusId); err != nil {
+			logrus.WithError(err).Warn("unable to Insert the record in tcustomer generateReport")
+			return errors.New("unable to Fetech doc metadata in treferencecode")
+		}
+	}
+	if _, err := tx.Exec(ctx, `insert into trequest(custid,typeofservice,requestdate,careof) values($1,$2,$3,$4)`, cusId, reportEntity.TypeOfService.RefCodeId, reportEntity.RequestDate, reportEntity.CareOf.RefCodeId); err != nil {
+		logrus.WithError(err).Warn("unable to Insert the record in tcustomer generateReport")
+		return errors.New("unable to Fetech doc metadata in treferencecode")
+	}
+	tx.Commit(ctx)
+
+	return nil
+
 }

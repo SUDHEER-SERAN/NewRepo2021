@@ -25,23 +25,26 @@ func MakeReportHandler(mr *mux.Router, s Service) http.Handler {
 
 func (h *reportsHandler) initializePage(w http.ResponseWriter, r *http.Request) {
 	context := r.Context()
-	data, err := h.service.initializePage(context)
+	list, err := h.service.initializePage(context)
 
 	if err != nil {
 		common.MakeError(w, http.StatusUnauthorized, "", "Canot create the user", "login")
 		return
 	}
-	json.NewEncoder(w).Encode(data)
+	json.NewEncoder(w).Encode(list)
 }
 
 func (h *reportsHandler) generateReport(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	reportEntity := Report{}
+	reportEntity := JobReportBasicDetails{}
 
 	if err := json.NewDecoder(r.Body).Decode(&reportEntity); err != nil {
-		logrus.WithError(err).Error("unable to unmarshal ReportDetails entry")
+		logrus.WithError(err).Error("Unable to unmarshal ReportDetails entry")
 		common.MakeError(w, http.StatusBadRequest, "generateReport", "Bad Request", "create")
 		return
 	}
-	h.service.generateReport(ctx, reportEntity)
+	if err := h.service.generateReport(ctx, reportEntity); err != nil {
+		common.MakeError(w, http.StatusBadRequest, "generateReport", "Bad Request", "create")
+	}
+	json.NewEncoder(w).Encode("{}")
 }
