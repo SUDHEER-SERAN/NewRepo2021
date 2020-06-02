@@ -11,6 +11,7 @@ type Service interface {
 	generateReport(ctx context.Context, reportEntity JobReportBasicDetails) error
 	getReports(ctx context.Context) error
 	getjrList(ctx context.Context, id int, searchKey string) ([]reportmodel.LookupRef, error)
+	getCustomerList(ctx context.Context, searchKey string) ([]CustomerList, error)
 }
 type reportService struct {
 	database *Database
@@ -54,6 +55,9 @@ func (s *reportService) generateReport(ctx context.Context, reportEntity JobRepo
 
 func (s *reportService) getReports(ctx context.Context) error {
 
+	// if reports, err := s.database.getReports(ctx); err != nil {
+	// 	return errors.New("unable to Fetch the reports")
+	// }
 	return nil
 }
 
@@ -65,6 +69,19 @@ func (s *reportService) getjrList(ctx context.Context, id int, searchKey string)
 	}
 	if list == nil {
 		var refList = []reportmodel.LookupRef{}
+		return refList, nil
+	}
+	return list, nil
+
+}
+func (s *reportService) getCustomerList(ctx context.Context, searchKey string) ([]CustomerList, error) {
+
+	list, err := s.database.getCustomerList(ctx, searchKey)
+	if err != nil {
+		return nil, errors.New("unable to Fetch the list")
+	}
+	if list == nil {
+		var refList = []CustomerList{}
 		return refList, nil
 	}
 	return list, nil

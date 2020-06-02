@@ -15,3 +15,9 @@ type JobReportBasicDetails struct {
 	TypeOfService reportmodel.LookupRef `json:"typeofservice"`
 	CareOf        reportmodel.LookupRef `json:"careof"`
 }
+
+type CustomerList struct {
+	reportmodel.Customer
+	Id    int    `json:"id"`
+	Value string `json:"value"`
+}

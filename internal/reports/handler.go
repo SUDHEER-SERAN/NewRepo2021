@@ -22,6 +22,7 @@ func MakeReportHandler(mr *mux.Router, s Service) http.Handler {
 	mr.HandleFunc("/report/generatereport", h.generateReport).Methods("POST")
 	mr.HandleFunc("/report/getreports", h.getReports).Methods("GET")
 	mr.HandleFunc("/report/getjrdropdownlist/{id}", h.getjrList).Methods("GET")
+	mr.HandleFunc("/report/getcustomerlist", h.getCustomerList).Methods("GET")
 	return mr
 }
 
@@ -75,9 +76,30 @@ func (h *reportsHandler) getjrList(w http.ResponseWriter, r *http.Request) {
 	var searchKey string
 	if !ok {
 		searchKey = ""
+	} else {
+		searchKey = keys[0]
 	}
-	searchKey = keys[0]
+
 	list, err := h.service.getjrList(ctx, id, searchKey)
+	if err != nil {
+		common.MakeError(w, http.StatusBadRequest, "getjrList", "Bad Request", "fetch")
+		return
+	}
+	json.NewEncoder(w).Encode(list)
+}
+
+func (h *reportsHandler) getCustomerList(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	keys, ok := r.URL.Query()["searchKey"]
+	var searchKey string
+	if !ok {
+		searchKey = ""
+	} else {
+		searchKey = keys[0]
+	}
+
+	list, err := h.service.getCustomerList(ctx, searchKey)
 	if err != nil {
 		common.MakeError(w, http.StatusBadRequest, "getjrList", "Bad Request", "fetch")
 		return

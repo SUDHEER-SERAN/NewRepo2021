@@ -73,7 +73,7 @@ func (d *Database) generateReport(ctx context.Context, reportEntity JobReportBas
 }
 func (d *Database) getReferenceList(ctx context.Context, id int, searchKey string) ([]reportmodel.LookupRef, error) {
 	var listOfRef []reportmodel.LookupRef
-	rows, err := d.database.Conn.Query(ctx, "select refcodeid,refcode from treferencecode where refid=$1 and lower(refcode) like  $2 || '%'", id, searchKey)
+	rows, err := d.database.Conn.Query(ctx, "select refcodeid,refcode from treferencecode where refid=$1 and lower(refcode) like  lower($2) || '%' limit 20", id, searchKey)
 	if err != nil {
 		logrus.WithError(err).Warn("unable to select  doc in treferencecode")
 		return listOfRef, errors.New("unable to select  doc in in treferencecode")
@@ -93,4 +93,52 @@ func (d *Database) getReferenceList(ctx context.Context, id int, searchKey strin
 	}
 
 	return listOfRef, nil
+}
+func (d *Database) getCustomerList(ctx context.Context, searchKey string) ([]CustomerList, error) {
+	var listOfRef []CustomerList
+	rows, err := d.database.Conn.Query(ctx, "select custid,firstname,lastname from tcustomer where lower(firstname) like  lower($1) || '%' limit 20", searchKey)
+	if err != nil {
+		logrus.WithError(err).Warn("unable to select  doc in treferencecode")
+		return listOfRef, errors.New("unable to select  doc in in treferencecode")
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+		typeRef := CustomerList{}
+		err := rows.Scan(&typeRef.CusId, &typeRef.FirstName, &typeRef.LastName)
+		typeRef.Value = typeRef.FirstName + " " + typeRef.LastName
+		typeRef.Id = typeRef.CusId
+		if err != nil {
+			logrus.WithError(err).Warn("unable to select  doc in tcustomer")
+			return listOfRef, errors.New("unable to select  doc in tcustomer")
+		}
+		listOfRef = append(listOfRef, typeRef)
+	}
+
+	return listOfRef, nil
+}
+
+func (d *Database) getReports(ctx context.Context) ([]JobReportBasicDetails, error) {
+	// rows, err := d.database.Conn.Query(ctx, "SELECT req.requestid requestid,getcodedescbyid(req.typeofservice) typeofservice,req.requestdate requestdate,cus.firstname firstname from trequest req inner join tcustomer cus on cus.custid=req.custid")
+	// if err != nil {
+	// 	logrus.WithError(err).Warn("unable to select  doc in treferencecode")
+	// 	return []JobReportBasicDetails{}, errors.New("unable to select  doc in in treferencecode")
+	// }
+
+	// defer rows.Close()
+
+	// for rows.Next() {
+	// 	typeRef := JobReportBasicDetails{}
+	// 	err := rows.Scan(&typeRef.RequestId, &typeRef.FirstName, &typeRef.LastName)
+	// 	typeRef.Value = typeRef.FirstName + " " + typeRef.LastName
+	// 	typeRef.Id = typeRef.CusId
+	// 	if err != nil {
+	// 		logrus.WithError(err).Warn("unable to select  doc in tcustomer")
+	// 		return listOfRef, errors.New("unable to select  doc in tcustomer")
+	// 	}
+	// 	listOfRef = append(listOfRef, typeRef)
+	// }
+
+	return nil, nil
 }
