@@ -120,25 +120,24 @@ func (d *Database) getCustomerList(ctx context.Context, searchKey string) ([]Cus
 }
 
 func (d *Database) getReports(ctx context.Context) ([]JobReportBasicDetails, error) {
-	// rows, err := d.database.Conn.Query(ctx, "SELECT req.requestid requestid,getcodedescbyid(req.typeofservice) typeofservice,req.requestdate requestdate,cus.firstname firstname from trequest req inner join tcustomer cus on cus.custid=req.custid")
-	// if err != nil {
-	// 	logrus.WithError(err).Warn("unable to select  doc in treferencecode")
-	// 	return []JobReportBasicDetails{}, errors.New("unable to select  doc in in treferencecode")
-	// }
+	var reportList []JobReportBasicDetails
+	rows, err := d.database.Conn.Query(ctx, "SELECT req.requestid requestid,getcodedescbyid(req.typeofservice) typeofservicedesc,req.typeofservice serviceId,req.requestdate requestdate,cus.firstname firstname from trequest req inner join tcustomer cus on cus.custid=req.custid order by req.requestid asc")
+	if err != nil {
+		logrus.WithError(err).Warn("unable to select  doc in treferencecode")
+		return []JobReportBasicDetails{}, errors.New("unable to select  doc in in treferencecode")
+	}
 
-	// defer rows.Close()
+	defer rows.Close()
 
-	// for rows.Next() {
-	// 	typeRef := JobReportBasicDetails{}
-	// 	err := rows.Scan(&typeRef.RequestId, &typeRef.FirstName, &typeRef.LastName)
-	// 	typeRef.Value = typeRef.FirstName + " " + typeRef.LastName
-	// 	typeRef.Id = typeRef.CusId
-	// 	if err != nil {
-	// 		logrus.WithError(err).Warn("unable to select  doc in tcustomer")
-	// 		return listOfRef, errors.New("unable to select  doc in tcustomer")
-	// 	}
-	// 	listOfRef = append(listOfRef, typeRef)
-	// }
+	for rows.Next() {
+		typeRef := JobReportBasicDetails{}
+		err := rows.Scan(&typeRef.RequestId, &typeRef.TypeOfService.RefCode, &typeRef.TypeOfService.RefId, &typeRef.RequestDate, &typeRef.FirstName)
+		if err != nil {
+			logrus.WithError(err).Warn("unable to select  doc in tcustomer")
+			return nil, errors.New("unable to select  doc in tcustomer")
+		}
+		reportList = append(reportList, typeRef)
+	}
 
-	return nil, nil
+	return reportList, nil
 }

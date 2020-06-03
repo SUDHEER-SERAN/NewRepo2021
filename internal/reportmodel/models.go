@@ -21,46 +21,46 @@ type Users struct {
 }
 
 type Customer struct {
-	CusId     int    `json:"cusid"`
-	FirstName string `json:"cusfirstname"`
-	LastName  string `json:"cuslastname"`
-	MobileNo  int    `json:"mobno"`
-	Address   string `json:"address"`
-	Location  string `json:"location"`
-	Route     string `json:"route"`
-	CusType   int    `json:"custype"`
+	CusId     int    `json:"cusid,omitempty"`
+	FirstName string `json:"cusfirstname,omitempty"`
+	LastName  string `json:"cuslastname,omitempty"`
+	MobileNo  int    `json:"mobno,omitempty"`
+	Address   string `json:"address,omitempty"`
+	Location  string `json:"location,omitempty"`
+	Route     string `json:"route,omitempty"`
+	CusType   int    `json:"custype,omitempty"`
 }
 
 type Request struct {
-	RequestId            int       `json:"requestid"`
-	CusId                int       `json:"cusid"`
-	RequestDate          time.Time `json:"requestdate"`
-	Complaint            string    `json:"complaint"`
-	TypeOfService        int       `json:"typeofservice"`
-	Section              string    `json:"section"`
-	OtherItem            string    `json:"otheritem"`
-	MaterialsUsed        string    `json:"materialsused"`
-	SparePartsUsed       string    `json:"sparepartsused"`
-	WorkStatus           int       `json:"workstatus"`
-	PendingReason        string    `json:"pendingreason"`
-	UdDetails            string    `json:"uddetails"`
-	BrokerId             int       `json:"brokerid"`
-	ItemsTakenfromClient string    `json:"itemstakenfromclient"`
-	DeliveredItems       string    `json:"deliveredItems"`
-	DeliveryDate         time.Time `json:"deliverydate"`
-	DeliveredBy          int       `json:"deliverydate"`
-	Verify               string    `json:"verify"`
-	VerifiedBy           int       `json:"verifiedby"`
-	TechnicianId         string    `json:"technicianid"`
-	WorkDetails          string    `json:"workdetails"`
-	WorkStartDate        time.Time `json:"workstartdate"`
-	WorkEndDate          time.Time `json:"workenddate"`
-	CancellationDate     time.Time `json:"cancellationdate"`
-	CancellationReason   string    `json:"cancellattionreason"`
-	CustomerApproval     string    `json:"customerapproval"`
-	OverTimeReason       string    `json:"overtimereason"`
-	OldReqId             int       `json:"oldreqid"`
-	CareOf               int       `json:"careof"`
+	RequestId            int       `json:"requestid,omitempty"`
+	CusId                int       `json:"cusid,omitempty"`
+	RequestDate          time.Time `json:"requestdate,omitempty"`
+	Complaint            string    `json:"complaint,omitempty"`
+	TypeOfService        int       `json:"typeofservice,omitempty"`
+	Section              string    `json:"section,omitempty"`
+	OtherItem            string    `json:"otheritem,omitempty"`
+	MaterialsUsed        string    `json:"materialsused,omitempty"`
+	SparePartsUsed       string    `json:"sparepartsused,omitempty"`
+	WorkStatus           int       `json:"workstatus,omitempty"`
+	PendingReason        string    `json:"pendingreason,omitempty"`
+	UdDetails            string    `json:"uddetails,omitempty"`
+	BrokerId             int       `json:"brokerid,omitempty"`
+	ItemsTakenfromClient string    `json:"itemstakenfromclient,omitempty"`
+	DeliveredItems       string    `json:"deliveredItems,omitempty"`
+	DeliveryDate         time.Time `json:"deliverydate,omitempty"`
+	DeliveredBy          int       `json:"deliverydate,omitempty"`
+	Verify               string    `json:"verify,omitempty"`
+	VerifiedBy           int       `json:"verifiedby,omitempty"`
+	TechnicianId         string    `json:"technicianid,omitempty"`
+	WorkDetails          string    `json:"workdetails,omitempty"`
+	WorkStartDate        time.Time `json:"workstartdate,omitempty"`
+	WorkEndDate          time.Time `json:"workenddate,omitempty"`
+	CancellationDate     time.Time `json:"cancellationdate,omitempty"`
+	CancellationReason   string    `json:"cancellattionreason,omitempty"`
+	CustomerApproval     string    `json:"customerapproval,omitempty"`
+	OverTimeReason       string    `json:"overtimereason,omitempty"`
+	OldReqId             int       `json:"oldreqid,omitempty"`
+	CareOf               int       `json:"careof,omitempty"`
 }
 
 type BrokerDetails struct {
@@ -97,6 +97,6 @@ type Charges struct {
 type LookupRef struct {
 	RefCodeId          int    `json:"id"`
 	RefId              int    `json:"refid"`
-	RefCode            string `json:"value"`
+	RefCode            string `json:"value,"`
 	RefCodeDescription string `json:"refcodedescription"`
 }

@@ -9,7 +9,7 @@ import (
 type Service interface {
 	initializePage(ctx context.Context) (ReportCombainedReference, error)
 	generateReport(ctx context.Context, reportEntity JobReportBasicDetails) error
-	getReports(ctx context.Context) error
+	getReports(ctx context.Context) ([]JobReportBasicDetails, error)
 	getjrList(ctx context.Context, id int, searchKey string) ([]reportmodel.LookupRef, error)
 	getCustomerList(ctx context.Context, searchKey string) ([]CustomerList, error)
 }
@@ -53,12 +53,13 @@ func (s *reportService) generateReport(ctx context.Context, reportEntity JobRepo
 	return nil
 }
 
-func (s *reportService) getReports(ctx context.Context) error {
+func (s *reportService) getReports(ctx context.Context) ([]JobReportBasicDetails, error) {
+	reports, err := s.database.getReports(ctx)
+	if err != nil {
+		return nil, errors.New("unable to Fetch the reports")
+	}
 
-	// if reports, err := s.database.getReports(ctx); err != nil {
-	// 	return errors.New("unable to Fetch the reports")
-	// }
-	return nil
+	return reports, nil
 }
 
 func (s *reportService) getjrList(ctx context.Context, id int, searchKey string) ([]reportmodel.LookupRef, error) {

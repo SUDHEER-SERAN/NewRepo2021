@@ -54,12 +54,12 @@ func (h *reportsHandler) generateReport(w http.ResponseWriter, r *http.Request) 
 }
 func (h *reportsHandler) getReports(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-
-	if err := h.service.getReports(ctx); err != nil {
+	reports, err := h.service.getReports(ctx)
+	if err != nil {
 		common.MakeError(w, http.StatusBadRequest, "generateReport", "Bad Request", "create")
 		return
 	}
-	json.NewEncoder(w).Encode("{}")
+	json.NewEncoder(w).Encode(reports)
 
 }
 func (h *reportsHandler) getjrList(w http.ResponseWriter, r *http.Request) {
