@@ -128,3 +128,5 @@ ALTER TABLE "tpayment" ADD FOREIGN KEY ("modeofpayment") REFERENCES "treferencec
 ALTER TABLE "tcharges" ADD FOREIGN KEY ("requestid") REFERENCES "trequest" ("requestid");
 
 ALTER TABLE "treferencecode" ADD FOREIGN KEY ("refid") REFERENCES "treference" ("refid");
+
+ALTER TABLE tcustomer ALTER COLUMN mobileno TYPE bigint;

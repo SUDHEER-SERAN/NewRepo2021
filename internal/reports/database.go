@@ -67,7 +67,6 @@ func (d *Database) generateReport(ctx context.Context, reportEntity JobReportBas
 		return errors.New("unable to Fetech doc metadata in treferencecode")
 	}
 	tx.Commit(ctx)
-
 	return nil
 
 }
@@ -121,7 +120,13 @@ func (d *Database) getCustomerList(ctx context.Context, searchKey string) ([]Cus
 
 func (d *Database) getReports(ctx context.Context) ([]JobReportBasicDetails, error) {
 	var reportList []JobReportBasicDetails
-	rows, err := d.database.Conn.Query(ctx, "SELECT req.requestid requestid,getcodedescbyid(req.typeofservice) typeofservicedesc,req.typeofservice serviceId,req.requestdate requestdate,cus.firstname firstname from trequest req inner join tcustomer cus on cus.custid=req.custid order by req.requestid asc")
+
+	rows, err := d.database.Conn.Query(ctx, `SELECT req.requestid requestid,
+	getcodedescbyid(req.typeofservice) typeofservicedesc,req.typeofservice 
+	serviceId,req.requestdate requestdate,cus.firstname firstname,
+	cus.mobileno mobno
+	from trequest req inner join tcustomer cus on cus.custid=req.custid order by req.requestid asc`)
+
 	if err != nil {
 		logrus.WithError(err).Warn("unable to select  doc in treferencecode")
 		return []JobReportBasicDetails{}, errors.New("unable to select  doc in in treferencecode")
@@ -131,7 +136,13 @@ func (d *Database) getReports(ctx context.Context) ([]JobReportBasicDetails, err
 
 	for rows.Next() {
 		typeRef := JobReportBasicDetails{}
-		err := rows.Scan(&typeRef.RequestId, &typeRef.TypeOfService.RefCode, &typeRef.TypeOfService.RefId, &typeRef.RequestDate, &typeRef.FirstName)
+		err := rows.Scan(&typeRef.RequestId,
+			&typeRef.TypeOfService.RefCode,
+			&typeRef.TypeOfService.RefId,
+			&typeRef.RequestDate,
+			&typeRef.FirstName,
+			&typeRef.MobileNo)
+
 		if err != nil {
 			logrus.WithError(err).Warn("unable to select  doc in tcustomer")
 			return nil, errors.New("unable to select  doc in tcustomer")
